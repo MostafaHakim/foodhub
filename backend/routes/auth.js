@@ -2,44 +2,67 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Restaurant = require("../models/Restaurant");
 const router = express.Router();
 
-// রেজিস্ট্রেশন
-router.post("/register", async (req, res) => {
+// Seller Registration
+router.post("/register-seller", async (req, res) => {
   try {
     const {
       name,
       email,
       password,
       phone,
-      userType,
       restaurantName,
-      vehicleType,
+      restaurantAddress,
+      cuisineType,
     } = req.body;
 
-    // চেক যদি ইউজার already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    // Basic validation
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !phone ||
+      !restaurantName ||
+      !restaurantAddress ||
+      !cuisineType
+    ) {
+      return res.status(400).json({ message: "Please provide all required fields." });
     }
 
-    // পাসওয়ার্ড হ্যাশ
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists with this email." });
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // নতুন ইউজার তৈরি
+    // Create new user
     const user = new User({
       name,
       email,
       password: hashedPassword,
       phone,
-      userType,
-      restaurantName: userType === "seller" ? restaurantName : undefined,
-      vehicleType: userType === "rider" ? vehicleType : undefined,
+      userType: "seller",
     });
 
     await user.save();
 
-    // JWT টোকেন জেনারেট
+    // Create new restaurant
+    const restaurant = new Restaurant({
+      name: restaurantName,
+      address: restaurantAddress,
+      cuisine: cuisineType,
+      owner: user._id,
+    });
+
+    await restaurant.save();
+
+    // Generate JWT
     const token = jwt.sign(
       { userId: user._id, userType: user.userType },
       process.env.JWT_SECRET || "your-secret-key",
@@ -54,11 +77,14 @@ router.post("/register", async (req, res) => {
         email: user.email,
         userType: user.userType,
       },
+      restaurant,
     });
   } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
+    console.error(error);
+    res.status(500).json({ message: "Something went wrong during seller registration." });
   }
 });
+
 
 // লগিন
 router.post("/login", async (req, res) => {

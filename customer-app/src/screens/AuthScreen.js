@@ -67,7 +67,7 @@ const AuthScreen = ({ navigation }) => {
       }
 
       dispatch(loginSuccess(response.data));
-      navigation.replace("Home");
+      navigation.replace("Main");
     } catch (error) {
       const message = error.response?.data?.message || "Something went wrong";
       dispatch(loginFailure(message));

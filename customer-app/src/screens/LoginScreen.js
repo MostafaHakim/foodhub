@@ -34,7 +34,7 @@ const LoginScreen = ({ navigation }) => {
       dispatch(loginSuccess(response.data));
 
       // Navigate to Main
-      navigation.replace("Main");
+      navigation.replace("Home");
     } catch (error) {
       const message = error.response?.data?.message || "Login failed";
       dispatch(loginFailure(message));

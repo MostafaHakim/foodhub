@@ -11,10 +11,6 @@ const userSchema = new mongoose.Schema(
       enum: ["customer", "seller", "rider", "admin"],
       required: true,
     },
-    // Seller-specific fields
-    restaurantName: { type: String },
-    restaurantAddress: { type: String },
-    cuisineType: { type: String },
     // Rider-specific fields
     vehicleType: { type: String },
     licenseNumber: { type: String },
